@@ -21,54 +21,54 @@
 -- SOFTWARE.
 
 if LibStub == nil then
-	error("LibLog-1.0 requires LibStub")
+	error("LibLog requires LibStub")
 end
 
---- @class LibLog-1.0.LogMessage
+--- @class LibLog.LogMessage
 --- @field public message string The human-readable log string.
 --- @field public template string The unprocessed message template.
---- @field public level LibLog-1.0.LogLevel The (numeric) level of the log. Can be compared against `LibLog.LogLevel`, or stringified using `LibLog.labels`.
+--- @field public level LibLog.LogLevel The (numeric) level of the log. Can be compared against `LibLog.LogLevel`, or stringified using `LibLog.labels`.
 --- @field public addon? string The name of the source addon.
 --- @field public time integer The number of seconds that have elapsed since the Unix epoch.
 --- @field public sequenceId integer The unique sequence identifier of the log within the current second.
 --- @field public properties table<string, unknown> All properties that have been extracted from the template string or manually injected.
 
---- @class LibLog-1.0.Sink
---- @field public OnLogMessageReceived fun(message: LibLog-1.0.LogMessage)
+--- @class LibLog.Sink
+--- @field public OnLogMessageReceived fun(message: LibLog.LogMessage)
 
---- @class LibLog-1.0.SinkConfiguration
---- @field public callback fun(message: LibLog-1.0.LogMessage)
+--- @class LibLog.SinkConfiguration
+--- @field public callback fun(message: LibLog.LogMessage)
 --- @field public obj? table
 --- @field public enabled boolean
 
---- @class LibLog-1.0.MessageTemplate
+--- @class LibLog.MessageTemplate
 --- @field public format string A string containing % style placeholders such as %d, %.2f, etc. Can be used to format the message.
 --- @field public stringFormat string A string containing %s placeholders for each property. Can be used to format the message.
---- @field public properties LibLog-1.0.MessageTemplateProperty[]
+--- @field public properties LibLog.MessageTemplateProperty[]
 
---- @class LibLog-1.0.MessageTemplateProperty
+--- @class LibLog.MessageTemplateProperty
 --- @field public name string The name of the property, which can be used to reference a field in the log message or log message properties.
 --- @field public format string The format of the property, such as %d, %.2f, %s, etc. Can be used to format the property value.
 --- @field public replacer? string The name of the replacement table to use when formatting this property, which can be used to convert enum values into human-readable strings.
 
---- @class LibLog-1.0.Property
+--- @class LibLog.Property
 --- @field public name string
 --- @field public value unknown
 --- @field public isCallback boolean
 
---- @class LibLog-1.0
---- @field private embeds table<LibLog-1.0.Logger, boolean>
---- @field private levels table<string, LibLog-1.0.LogLevel>
+--- @class LibLog
+--- @field private embeds table<LibLog.Logger, boolean>
+--- @field private levels table<string, LibLog.LogLevel>
 --- @field private enumNames table<unknown, string>
---- @field private sinks table<string, LibLog-1.0.SinkConfiguration>
+--- @field private sinks table<string, LibLog.SinkConfiguration>
 --- @field private currentTime integer
 --- @field private currentSequenceId integer
-local LibLog = LibStub:NewLibrary("LibLog-1.0", 17)
+local LibLog = LibStub:NewLibrary("LibLog", 17)
 if LibLog == nil then
 	return
 end
 
---- @enum LibLog-1.0.LogLevel
+--- @enum LibLog.LogLevel
 LibLog.LogLevel = {
 	NONE    = 0,
 	TRACE   = 100, -- High-frequency, noisy data that is rarely enabled outside of debugging.
@@ -97,7 +97,7 @@ LibLog.sinks = LibLog.sinks or {}
 LibLog.currentTime = LibLog.currentTime or 0
 LibLog.currentSequenceId = LibLog.currentSequenceId or 1
 
---- @class LibLog-1.0.ChatFrameSink : LibLog-1.0.Sink
+--- @class LibLog.ChatFrameSink : LibLog.Sink
 local ChatFrameSink = {}
 
 --- @type table<string, string>
@@ -117,10 +117,10 @@ ChatFrameSink.COLOR_SCHEME = {
 	["event"] = "ffbd93f9",
 }
 
---- @class LibLog-1.0.Logger
+--- @class LibLog.Logger
 --- @field public name? string
 --- @field public moduleName? string
---- @field public logProperties? table<string, LibLog-1.0.Property>
+--- @field public logProperties? table<string, LibLog.Property>
 local Logger = {}
 
 local L = {
@@ -128,10 +128,10 @@ local L = {
 	level_desc = "Select the logging level for this addon. Select 'NONE' to completely disable logging.\n\nLower values mean more messages get logged, where 'TRACE' logs everything."
 }
 
---- @type LibLog-1.0.LogLevel
+--- @type LibLog.LogLevel
 local minLogLevel = LibLog.LogLevel.INFO
 
---- @type table<string, LibLog-1.0.MessageTemplate>
+--- @type table<string, LibLog.MessageTemplate>
 local templateCache = {}
 
 --- @type table<table, boolean>
@@ -199,7 +199,7 @@ local function DeepCopy(value, seen)
 	return result
 end
 
---- @param logger LibLog-1.0.Logger
+--- @param logger LibLog.Logger
 local function GetLoggerName(logger)
 	if logger.moduleName ~= nil and logger.name ~= nil then
 		local realName = string.gsub(logger.name, "_" .. logger.moduleName .. "$", "")
@@ -214,12 +214,12 @@ local function GetReplacerName(logger, id)
 	return (name or "") .. "_" .. id
 end
 
---- @param logger LibLog-1.0.Logger
---- @param template LibLog-1.0.MessageTemplate
+--- @param logger LibLog.Logger
+--- @param template LibLog.MessageTemplate
 --- @param values unknown[]
 --- @return string
 local function CreateMessage(logger, template, values)
-	--- @param property LibLog-1.0.MessageTemplateProperty
+	--- @param property LibLog.MessageTemplateProperty
 	--- @param current unknown
 	--- @param visited table<table, boolean>
 	--- @param escape? boolean
@@ -284,14 +284,14 @@ local function CreateMessage(logger, template, values)
 end
 
 --- @param template string
---- @return LibLog-1.0.MessageTemplate
+--- @return LibLog.MessageTemplate
 local function GetMessageTemplate(template)
 	local result = templateCache[template]
 	if result ~= nil then
 		return result
 	end
 
-	--- @type LibLog-1.0.MessageTemplate
+	--- @type LibLog.MessageTemplate
 	result = {
 		format = "",
 		stringFormat = "",
@@ -301,7 +301,7 @@ local function GetMessageTemplate(template)
 	template = string.gsub(template, "%%", "%%%%")
 
 	result.format = string.gsub(template, "{(%w+)#?(%w*):?(.-)}", function(key, replacer, format)
-		--- @type LibLog-1.0.MessageTemplateProperty
+		--- @type LibLog.MessageTemplateProperty
 		local item = {
 			name = key,
 			format = format ~= "" and ("%" .. format) or "%s",
@@ -358,8 +358,8 @@ local function GetValues(...)
 	return 0, AcquireCachedTable()
 end
 
---- @param logger LibLog-1.0.Logger
---- @param template LibLog-1.0.MessageTemplate
+--- @param logger LibLog.Logger
+--- @param template LibLog.MessageTemplate
 --- @param values unknown[]
 --- @return table<string, unknown>
 local function PopulateMessageProperties(logger, template, values)
@@ -403,7 +403,7 @@ local function PopulateMessageProperties(logger, template, values)
 end
 
 --- @param name? string
---- @param level LibLog-1.0.LogLevel
+--- @param level LibLog.LogLevel
 --- @return boolean
 local function IsLogLevelEnabled(name, level)
 	if name ~= nil then
@@ -417,7 +417,7 @@ local function IsLogLevelEnabled(name, level)
 	return level >= minLogLevel
 end
 
---- @param message LibLog-1.0.LogMessage
+--- @param message LibLog.LogMessage
 function ChatFrameSink:OnLogMessageReceived(message)
 	local frame = DEFAULT_CHAT_FRAME
 
@@ -440,7 +440,7 @@ function ChatFrameSink:OnLogMessageReceived(message)
 	end
 end
 
---- @param message LibLog-1.0.LogMessage
+--- @param message LibLog.LogMessage
 function ChatFrameSink:CreateMessage(message)
 	local template = LibLog:GetFormat(message.template)
 	local values = AcquireCachedTable()
@@ -457,8 +457,8 @@ function ChatFrameSink:CreateMessage(message)
 end
 
 --- @private
---- @param message LibLog-1.0.LogMessage
---- @param property LibLog-1.0.MessageTemplateProperty
+--- @param message LibLog.LogMessage
+--- @param property LibLog.MessageTemplateProperty
 --- @return string
 function ChatFrameSink:Serialize(message, property)
 	local TABLE_COLOR = self.COLOR_SCHEME["table"]
@@ -620,7 +620,7 @@ end
 --- @param name string
 --- @param value unknown|function
 function Logger:PushLogProperty(name, value)
-	--- @type LibLog-1.0.Property
+	--- @type LibLog.Property
 	local property = {
 		name = name,
 		value = value,
@@ -650,7 +650,7 @@ end
 --- error-prone.
 ---
 --- @param properties table<string, unknown>
---- @param closure fun(logger: LibLog-1.0.Logger)
+--- @param closure fun(logger: LibLog.Logger)
 function Logger:WithLogContext(properties, closure)
 	local logger = self:ForLogContext(properties)
 
@@ -664,16 +664,16 @@ end
 --- Create a new logger with the specified context. All logs produced by this logger will have additional properties added to them.
 ---
 --- @param properties? table<string, unknown>
---- @return LibLog-1.0.Logger
+--- @return LibLog.Logger
 function Logger:ForLogContext(properties)
-	--- @type table<string, LibLog-1.0.Property>
+	--- @type table<string, LibLog.Property>
 	local props
 
 	if properties ~= nil then
 		props = {}
 
 		for k, v in pairs(properties) do
-			--- @type LibLog-1.0.Property
+			--- @type LibLog.Property
 			local property = {
 				name = k,
 				value = v,
@@ -705,7 +705,7 @@ function Logger:ForLogContext(properties)
 		end
 	})
 
-	return proxy --[[@as LibLog-1.0.Logger]]
+	return proxy --[[@as LibLog.Logger]]
 end
 
 --- Add an enum-like type to the logger, which can be referenced within log templates using `{propertyName#EnumName}`.
@@ -725,7 +725,7 @@ end
 ---
 --- This will always return `true` for the FTL log level.
 ---
---- @param level LibLog-1.0.LogLevel|string
+--- @param level LibLog.LogLevel|string
 --- @return boolean
 function Logger:IsLogLevelEnabled(level)
 	local name = GetLoggerName(self)
@@ -743,7 +743,7 @@ end
 
 --- Set the minimum log level, any logs with a level lower than the given value will be ignored.
 ---
---- @param level? LibLog-1.0.LogLevel|string The log level to set.
+--- @param level? LibLog.LogLevel|string The log level to set.
 function Logger:SetLogLevel(level)
 	local name = GetLoggerName(self)
 	if name == nil then
@@ -775,7 +775,7 @@ end
 
 --- Get the current log level.
 ---
---- @return LibLog-1.0.LogLevel
+--- @return LibLog.LogLevel
 function Logger:GetLogLevel()
 	local name = GetLoggerName(self)
 
@@ -830,7 +830,7 @@ end
 --- Register an external sink to replicate the logging stream.
 ---
 --- @param name string
---- @param callback fun(message: LibLog-1.0.LogMessage)|LibLog-1.0.Sink
+--- @param callback fun(message: LibLog.LogMessage)|LibLog.Sink
 function LibLog:RegisterSink(name, callback)
 	if type(callback) == "function" then
 		self.sinks[name] = {
@@ -889,7 +889,7 @@ function LibLog:GetSinks(enabledOnly)
 	return result
 end
 
---- Embed `LibLog-1.0` into the target object, making several logging functions available for use.
+--- Embed `LibLog` into the target object, making several logging functions available for use.
 ---
 --- @generic T : table
 --- @param target T The target object.
@@ -905,7 +905,7 @@ function LibLog:Embed(target)
 end
 
 --- @param template string
---- @return LibLog-1.0.MessageTemplate
+--- @return LibLog.MessageTemplate
 function LibLog:GetFormat(template)
 	return GetMessageTemplate(template)
 end
@@ -928,8 +928,8 @@ function LibLog:GetNextSequenceId()
 end
 
 --- @private
---- @param logger LibLog-1.0.Logger The source logger.
---- @param level LibLog-1.0.LogLevel The log level to log with.
+--- @param logger LibLog.Logger The source logger.
+--- @param level LibLog.LogLevel The log level to log with.
 --- @param template string The message template.
 --- @param ... any The values to log.
 --- @return unknown
@@ -949,7 +949,7 @@ function LibLog:Log(logger, level, template, ...)
 	if isAllowed then
 		local time, sequenceId = self:GetNextSequenceId()
 
-		--- @type LibLog-1.0.LogMessage
+		--- @type LibLog.LogMessage
 		local result = {
 			message = message,
 			template = template,
@@ -983,7 +983,7 @@ end
 
 --- @private
 function LibLog:TestSuite()
-	--- @type LibLog-1.0.Logger
+	--- @type LibLog.Logger
 	local Addon = LibLog:Embed({
 		name = "TestSuite"
 	})

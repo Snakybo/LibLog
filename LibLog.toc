@@ -1,5 +1,5 @@
-## Interface: 120100, 50504, 40402, 30405, 20506, 16001, 11509
-## Title: Lib: LibLog-1.0
+## Interface: 120100, 50504, 20506, 16001, 11509
+## Title: Lib: Log
 ## Author: Snakybo
 ## LoadOnDemand: 1
 ## Notes: Allows addons to use a standardized, configurable logging framwork.
@@ -15,10 +15,10 @@
 ## Category-ruRU: Библиотеки
 ## Category-zhCN: 函数库
 ## Category-zhTW: 函式庫
-## X-Website: https://github.com/Snakybo/LibLog-1.0
+## X-Website: https://github.com/Snakybo/LibLog
 ## X-Curse-Project-ID: 1441738
-## X-Github: https://github.com/Snakybo/LibLog-1.0
+## X-Github: https://github.com/Snakybo/LibLog
 
 Libs.xml
 
-LibLog-1.0\LibLog-1.0.xml
+LibLog\LibLog.xml

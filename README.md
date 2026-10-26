@@ -1,16 +1,16 @@
-# LibLog-1.0
+# LibLog
 
-LibLog-1.0 is a logging library for World of Warcraft. It aims to be easy to use with a simple API. LibLog-1.0's biggest feature is that its built for
+LibLog is a logging library for World of Warcraft. It aims to be easy to use with a simple API. LibLog's biggest feature is that its built for
 structured logging.
 
-There are several related addons available which can capture the output of LibLog-1.0 and visualize it to an [in-game window](https://github.com/Snakybo/LogSink-Table), or [saved variables](https://github.com/Snakybo/LogSink-SavedVariables).
+There are several related addons available which can capture the output of LibLog and visualize it to an [in-game window](https://github.com/Snakybo/LogSink-Table), or [saved variables](https://github.com/Snakybo/LogSink-SavedVariables).
 
 ```lua
 MyAddon:LogInfo("My current health is {health}, and I have {mana} mana", UnitHealth("player"), UnitPower("player"))
 ```
 
-LibLog-1.0 uses [Message Templates](https://messagetemplates.org/), which is a DSL that standardizes formatted strings with named
-parameters. Instead of formatting variables directly into the text, LibLog-1.0 captures the value associated with the value.
+LibLog uses [Message Templates](https://messagetemplates.org/), which is a DSL that standardizes formatted strings with named
+parameters. Instead of formatting variables directly into the text, LibLog captures the value associated with the value.
 
 The above example will record two properties (`health`, and `mana`) in the log object, when inspecting the log object, they appear in a `properties` table,
 alongside the timestamp, message, and log level.
@@ -25,7 +25,7 @@ alongside the timestamp, message, and log level.
 }
 ```
 
-Note that even though LibLog-1.0 is built to work with structured logs, it will first and foremost still print human-readable text into the chat window.
+Note that even though LibLog is built to work with structured logs, it will first and foremost still print human-readable text into the chat window.
 When no additional sink addons are installed, that's all it does. It still offers the full suite of features, they will just be mostly transparant, which is how
 99.9% of users will experience it.
 
@@ -84,19 +84,19 @@ This makes it trivial to query on this data and answer the above questions. It a
 
 ## Getting started
 
-Like many other libraries, LibLog-1.0 must be embedded within your addon. When using AceAddon-3.0, this can be done automatically, otherwise, you can do so
+Like many other libraries, LibLog must be embedded within your addon. When using AceAddon-3.0, this can be done automatically, otherwise, you can do so
 using LibStub.
 
 ```lua
 -- Option 1, use AceAddon-3.0
-MyAddon = LibStub("AceAddon-3.0"):NewAddon("MyAddon", "LibLog-1.0")
+MyAddon = LibStub("AceAddon-3.0"):NewAddon("MyAddon", "LibLog")
 
 -- Option 2, manually use LibStub
--- NOTE: LibLog-1.0 works best when your addon contains a 'name' property. If you use AceAddon-3.0, this is set automatically.
+-- NOTE: LibLog works best when your addon contains a 'name' property. If you use AceAddon-3.0, this is set automatically.
 -- When manually embedding using LibStub, it's highly recommended to add a 'name' property to your addon object
 MyAddon = {}
 MyAddon.name = "MyAddon"
-LibStub("LibLog-1.0"):Embed(MyAddon)
+LibStub("LibLog"):Embed(MyAddon)
 
 MyAddon:LogInfo("Hello {name}!", MyAddon.name)
 -- Hello MyAddon!
@@ -104,7 +104,7 @@ MyAddon:LogInfo("Hello {name}!", MyAddon.name)
 
 ### Log levels
 
-LibLog-1.0 implements six severity levels, combined with a minimum level to process log objects.
+LibLog implements six severity levels, combined with a minimum level to process log objects.
 
 Level | Method | When to use
 ----- | ------ | -----------
@@ -136,7 +136,7 @@ MyAddon:GetLogLevel()
 ```
 
 It's likely also desirable to initialize the logger upon startup, as your configured minimum log level is not persisted by the library — that responsibility is
-for your addon itself. LibLog-1.0 does offer functionality to _mostly_ do it for you.
+for your addon itself. LibLog does offer functionality to _mostly_ do it for you.
 
 ```lua
 function MyAddon:OnInitialize()
@@ -261,7 +261,7 @@ local Scope = {
 }
 ```
 
-When adding the value of `Scope.PROFILE` to a log, it will simply print `1`, which is not very useful. LibLog-1.0 contains funtionality to register enum tables, and automatically format them in log messages.
+When adding the value of `Scope.PROFILE` to a log, it will simply print `1`, which is not very useful. LibLog contains funtionality to register enum tables, and automatically format them in log messages.
 
 ```lua
 MyAddon:AddLogEnum("Scope", Scope)
@@ -272,12 +272,12 @@ This is a two-part process, first the enum table must be registered with `AddLog
 
 ## Custom sinks
 
-And finally, the primary reason LibLog-1.0 exists, custom sinks to process log objects.
+And finally, the primary reason LibLog exists, custom sinks to process log objects.
 
 To register a custom sink, use the following function:
 
 ```lua
---- @param message LibLog-1.0.LogMessage
+--- @param message LibLog.LogMessage
 local function OnLogMessageReceived(message)
   print(message.message)
 end
@@ -288,10 +288,10 @@ LibLog:RegisterSink("MyLogSink", OnLogMessageReceived)
 You can also pass in an object that contains a `OnLogMessageReceived` function:
 
 ```lua
---- @class MySink : LibLog-1.0.Sink
+--- @class MySink : LibLog.Sink
 local MySink = {}
 
---- @param message LibLog-1.0.LogMessage
+--- @param message LibLog.LogMessage
 function MySink:OnLogMessageReceived(message)
   print(message.message)
 end
@@ -299,7 +299,7 @@ end
 LibLog:RegisterSink("MyLogSink", MySink)
 ```
 
-The `LibLog-1.0.LogMessage` message object contains all relevant information for the log message, including the value of each individial property.
+The `LibLog.LogMessage` message object contains all relevant information for the log message, including the value of each individial property.
 
 ```lua
 {
@@ -325,10 +325,10 @@ LibLog:DisableSink("MyLogSink")
 
 ## Modules
 
-LibLog-1.0 supports modularized code natively, with a focus on AceAddon-3.0 modules. When using these, you can simply embed LibLog-1.0 into your module. LibLog-1.0 will automatically capture the module name into a `module` field:
+LibLog supports modularized code natively, with a focus on AceAddon-3.0 modules. When using these, you can simply embed LibLog into your module. LibLog will automatically capture the module name into a `module` field:
 
 ```lua
-MyAddon:NewModule("MyModule", Prototype, "LibLog-1.0")
+MyAddon:NewModule("MyModule", Prototype, "LibLog")
 ```
 
 When not using AceAddon-3.0 but still wanting to use modules, defining them works similar to embedding the main addon:
@@ -338,7 +338,7 @@ MyModule = {}
 MyModule.name = "MyAddon" -- or MyAddon_MyModule
 MyModule.moduleName = "MyModule"
 
-LibStub("LibLog-1.0"):Embed(MyModule)
+LibStub("LibLog"):Embed(MyModule)
 ```
 
 ### Available sinks
