@@ -327,7 +327,8 @@ local function PackVarargs(...)
 	local result = AcquireCachedTable()
 
 	for i = 1, count do
-		result[i] = DeepCopy(select(i, ...))
+		local value = select(i, ...)
+		result[i] = DeepCopy(value)
 	end
 
 	return count, result
