@@ -113,7 +113,7 @@ Level | Method | When to use
 4 | LogWarning | User-error, or other non-breaking issues.
 3 | LogInfo | General status updates and runtime milestones.
 2 | LogDebug | Code paths and state changes that are useful when determining how something happened.
-1 | LogVerbose | High-frequency, noisy data that is rarely enabled outside of debugging.
+1 | LogTrace | High-frequency, noisy data that is rarely enabled outside of debugging.
 
 By default, the minimum log level is set to `Info`, meaning `Info` and higher levels are processed.
 
@@ -177,7 +177,7 @@ All log methods support a callback function which is executed on-demand, and can
 that during normal gameplay performance is not affected by these logs.
 
 ```lua
-MyAddon:LogVerbose("Currently in a raid with {members}", function()
+MyAddon:LogTrace("Currently in a raid with {members}", function()
   -- this code will only run if the log level is set to VERBOSE
   local result = {}
 
@@ -237,7 +237,7 @@ MyAddon:WithLogContext({ extra = 41, anotherProperty = function() return UnitHea
 
   -- <logic>
 
-  logger:LogVerbose("This log will still have additional properties")
+  logger:LogTrace("This log will still have additional properties")
 end)
 ```
 

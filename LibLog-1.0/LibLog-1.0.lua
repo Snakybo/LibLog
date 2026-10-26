@@ -70,17 +70,17 @@ end
 
 --- @enum LibLog-1.0.LogLevel
 LibLog.LogLevel = {
-	NONE = 0,
-	VERBOSE = 1, -- High-frequency, noisy data that is rarely enabled outside of debugging.
-	DEBUG = 2, -- Code paths and state changes that are useful when determining how something happened.
-	INFO = 3, -- General status updates and runtime milestones.
-	WARNING = 4, -- User-error, or other non-breaking issues.
-	ERROR = 5, -- A high-severity logic issue that leaves functionality unavailable or expections broken.
-	FATAL = 6 -- A critical or otherwise unrecoverable error that must halt execution.
+	NONE    = 0,
+	TRACE   = 100, -- High-frequency, noisy data that is rarely enabled outside of debugging.
+	DEBUG   = 200, -- Code paths and state changes that are useful when determining how something happened.
+	INFO    = 300, -- General status updates and runtime milestones.
+	WARNING = 400, -- User-error, or other non-breaking issues.
+	ERROR   = 500, -- A high-severity logic issue that leaves functionality unavailable or expections broken.
+	FATAL   = 600 -- A critical or otherwise unrecoverable error that must halt execution.
 }
 
 LibLog.labels = {
-	[LibLog.LogLevel.VERBOSE] = "VRB",
+	[LibLog.LogLevel.TRACE] = "TRC",
 	[LibLog.LogLevel.DEBUG] = "DBG",
 	[LibLog.LogLevel.INFO] = "INF",
 	[LibLog.LogLevel.WARNING] = "WRN",
@@ -102,7 +102,7 @@ local ChatFrameSink = {}
 
 --- @type table<string, string>
 ChatFrameSink.COLOR_SCHEME = {
-	[LibLog.LogLevel.VERBOSE] = "ff6e6e6e",
+	[LibLog.LogLevel.TRACE] = "ff6e6e6e",
 	[LibLog.LogLevel.DEBUG] = "ffa1a1a1",
 	[LibLog.LogLevel.INFO] = "ff00dfff",
 	[LibLog.LogLevel.WARNING] = "ffffcf40",
@@ -125,7 +125,7 @@ local Logger = {}
 
 local L = {
 	level = "Log level",
-	level_desc = "Select the logging level for this addon. Select 'NONE' to completely disable logging.\n\nLower values mean more messages get logged, where 'VERBOSE' logs everything."
+	level_desc = "Select the logging level for this addon. Select 'NONE' to completely disable logging.\n\nLower values mean more messages get logged, where 'TRACE' logs everything."
 }
 
 --- @type LibLog-1.0.LogLevel
@@ -534,8 +534,21 @@ end
 --- @param template string The template message, use `{propertyName}` to enable parameter replacements.
 --- @param ... any The values to log.
 --- @return unknown
+--- @deprecated Use `Logger:LogTrace` instead.
 function Logger:LogVerbose(template, ...)
-	return LibLog:Log(self, LibLog.LogLevel.VERBOSE, template, ...)
+	return LibLog:Log(self, LibLog.LogLevel.TRACE, template, ...)
+end
+
+--- Log a TRC message. Trace logs should be used for high-frequency logs or low-level data. For example, raw calculations or other raw data.
+---
+--- This function returns an `unknown` value to allow for `return MyAddon:LogTrace(template, ...)` to immediately exit the running function with a `nil`
+--- value.
+---
+--- @param template string The template message, use `{propertyName}` to enable parameter replacements.
+--- @param ... any The values to log.
+--- @return unknown
+function Logger:LogTrace(template, ...)
+	return LibLog:Log(self, LibLog.LogLevel.TRACE, template, ...)
 end
 
 --- Log a DBG message. Debug logs should be used for developers to verify code paths, state changes, or event registration during active
@@ -976,7 +989,7 @@ function LibLog:TestSuite()
 	})
 
 	Addon:SetLogLevel(self.LogLevel.INFO)
-	Addon:LogVerbose("HIDDEN: Verbose")
+	Addon:LogTrace("HIDDEN: Trace")
 	Addon:LogDebug("HIDDEN: Debug")
 	Addon:LogInfo("VISIBLE: Info")
 	Addon:LogWarning("VISIBLE: Warning")
@@ -988,6 +1001,8 @@ function LibLog:TestSuite()
 		list = { 10, nil, 30 }
 	})
 	Addon:LogInfo("Empty Top-Level: {emptyTable}", {})
+	Addon:LogInfo("Multiple tables: {first} and {second}", { "first", "second" }, { third = 3, fourth = 4 })
+
 
 	local circular = { name = "Self" }
 	circular.child = circular
