@@ -3,8 +3,11 @@ enable-nolib-creation: no
 
 ignore:
   - .editorconfig
+  - .gitattributes
+  - .gitignore
+  - .wowluarc.json
   - CONTRIBUTING.md
   - README.md
 
 externals:
-  LibStub: https://repos.curseforge.com/wow/libstub/trunk
+  Libs/LibStub: https://repos.curseforge.com/wow/libstub/trunk

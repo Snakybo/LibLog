@@ -57,6 +57,12 @@ end
 --- @field public isCallback boolean
 
 --- @class LibLog-1.0
+--- @field private embeds table<LibLog-1.0.Logger, boolean>
+--- @field private levels table<string, LibLog-1.0.LogLevel>
+--- @field private enumNames table<unknown, string>
+--- @field private sinks table<string, LibLog-1.0.SinkConfiguration>
+--- @field private currentTime integer
+--- @field private currentSequenceId integer
 local LibLog = LibStub:NewLibrary("LibLog-1.0", 17)
 if LibLog == nil then
 	return
@@ -84,31 +90,17 @@ LibLog.labels = {
 
 LibLog.configKey = "logLevel"
 
---- @private
---- @type table<LibLog-1.0.Logger, boolean>
 LibLog.embeds = LibLog.embeds or {}
-
---- @private
---- @type table<string, LibLog-1.0.LogLevel>
 LibLog.levels = LibLog.levels or {}
-
---- @private
---- @type table<unknown, string>
 LibLog.enumNames = {}
-
---- @private
---- @type table<string, LibLog-1.0.SinkConfiguration>
 LibLog.sinks = LibLog.sinks or {}
-
---- @private
 LibLog.currentTime = LibLog.currentTime or 0
-
---- @private
 LibLog.currentSequenceId = LibLog.currentSequenceId or 1
 
 --- @class LibLog-1.0.ChatFrameSink : LibLog-1.0.Sink
 local ChatFrameSink = {}
 
+--- @type table<string, string>
 ChatFrameSink.COLOR_SCHEME = {
 	[LibLog.LogLevel.VERBOSE] = "ff6e6e6e",
 	[LibLog.LogLevel.DEBUG] = "ffa1a1a1",
@@ -219,7 +211,7 @@ end
 
 local function GetReplacerName(logger, id)
 	local name = GetLoggerName(logger)
-	return name .. "_" .. id
+	return (name or "") .. "_" .. id
 end
 
 --- @param logger LibLog-1.0.Logger
@@ -413,10 +405,12 @@ end
 --- @param level LibLog-1.0.LogLevel
 --- @return boolean
 local function IsLogLevelEnabled(name, level)
-	local addonLevel = LibLog.levels[name]
+	if name ~= nil then
+		local addonLevel = LibLog.levels[name]
 
-	if addonLevel ~= nil then
-		return level >= addonLevel
+		if addonLevel ~= nil then
+			return level >= addonLevel
+		end
 	end
 
 	return level >= minLogLevel
@@ -428,29 +422,16 @@ function ChatFrameSink:OnLogMessageReceived(message)
 
 	--- @type string[]
 	local prefix
+	local color = self.COLOR_SCHEME[message.level]
+	local addon = message.addon or ""
 
 	if message.level <= LibLog.LogLevel.DEBUG then
-		prefix = {
-			"|c",
-			self.COLOR_SCHEME[message.level],
-			date("%H:%M:%S", message.time) --[[@as string]],
-			" ",
-			LibLog.labels[message.level],
-			" ",
-			message.addon,
-			":",
-			"|r"
-		}
+		local time = date("%H:%M:%S", message.time) --[[@as string]]
+		prefix = { "|c", color, time, " ", LibLog.labels[message.level], " ", addon, ":", "|r" }
+	elseif message.level == LibLog.LogLevel.INFO then
+		prefix = { "|c", color, addon, ":", "|r" }
 	else
-		prefix = {
-			"|c",
-			self.COLOR_SCHEME[message.level],
-			LibLog.labels[message.level],
-			" ",
-			message.addon,
-			":",
-			"|r"
-		}
+		prefix = { "|c", color, LibLog.labels[message.level], " ", addon, ":", "|r" }
 	end
 
 	if frame then
@@ -710,7 +691,7 @@ function Logger:ForLogContext(properties)
 		end
 	})
 
-	return proxy
+	return proxy --[[@as LibLog-1.0.Logger]]
 end
 
 --- Add an enum-like type to the logger, which can be referenced within log templates using `{propertyName#EnumName}`.
@@ -783,6 +764,11 @@ end
 --- @return LibLog-1.0.LogLevel
 function Logger:GetLogLevel()
 	local name = GetLoggerName(self)
+
+	if name == nil then
+		return minLogLevel
+	end
+
 	return LibLog.levels[name] or minLogLevel
 end
 
@@ -1061,7 +1047,7 @@ function LibLog:TestSuite()
 	Addon:LogInfo("Using enum values: {enumValue#TestEnum}", 2)
 
 	self.embeds[Addon] = nil
-	self.levels[Addon.name] = nil
+	self.levels[Addon.name or ""] = nil
 end
 
 for target in pairs(LibLog.embeds) do
