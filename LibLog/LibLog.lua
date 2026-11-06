@@ -63,7 +63,7 @@ end
 --- @field private sinks table<string, LibLog.SinkConfiguration>
 --- @field private currentTime integer
 --- @field private currentSequenceId integer
-local LibLog = LibStub:NewLibrary("LibLog", 17)
+local LibLog = LibStub:NewLibrary("LibLog", 18)
 if LibLog == nil then
 	return
 end
@@ -528,90 +528,65 @@ end
 
 --- Log a VRB message. Verbose logs should be used for high-frequency logs or low-level data. For example, raw calculations or other raw data.
 ---
---- This function returns an `unknown` value to allow for `return MyAddon:LogVerbose(template, ...)` to immediately exit the running function with a `nil`
---- value.
----
 --- @param template string The template message, use `{propertyName}` to enable parameter replacements.
 --- @param ... any The values to log.
---- @return unknown
 --- @deprecated Use `Logger:LogTrace` instead.
 function Logger:LogVerbose(template, ...)
-	return LibLog:Log(self, LibLog.LogLevel.TRACE, template, ...)
+	LibLog:Log(self, LibLog.LogLevel.TRACE, template, ...)
 end
 
 --- Log a TRC message. Trace logs should be used for high-frequency logs or low-level data. For example, raw calculations or other raw data.
 ---
---- This function returns an `unknown` value to allow for `return MyAddon:LogTrace(template, ...)` to immediately exit the running function with a `nil`
---- value.
----
 --- @param template string The template message, use `{propertyName}` to enable parameter replacements.
 --- @param ... any The values to log.
---- @return unknown
 function Logger:LogTrace(template, ...)
-	return LibLog:Log(self, LibLog.LogLevel.TRACE, template, ...)
+	LibLog:Log(self, LibLog.LogLevel.TRACE, template, ...)
 end
 
 --- Log a DBG message. Debug logs should be used for developers to verify code paths, state changes, or event registration during active
 --- development and testing.
 ---
---- This function returns an `unknown` value to allow for `return MyAddon:LogDebug(template, ...)` to immediately exit the running function with a `nil` value.
----
 --- @param template string The template message, use `{propertyName}` to enable parameter replacements.
 --- @param ... any The values to log.
---- @return unknown
 function Logger:LogDebug(template, ...)
-	return LibLog:Log(self, LibLog.LogLevel.DEBUG, template, ...)
+	LibLog:Log(self, LibLog.LogLevel.DEBUG, template, ...)
 end
 
 --- Log an INF message. Info logs shoud be used for general status updates and milestones. Generally when following the happy path of your code
 --- to indicate the addon is working. For example, successful loading, profile changes, or user-triggered actions.
 ---
---- This function returns an `unknown` value to allow for `return MyAddon:LogInfo(template, ...)` to immediately exit the running function with a `nil` value.
----
 --- @param template string The template message, use `{propertyName}` to enable parameter replacements.
 --- @param ... any The values to log.
---- @return unknown
 function Logger:LogInfo(template, ...)
-	return LibLog:Log(self, LibLog.LogLevel.INFO, template, ...)
+	LibLog:Log(self, LibLog.LogLevel.INFO, template, ...)
 end
 
 --- Log a WRN message. Warning logs should be the result of user error or other non-breaking issues. For example, optional settings are missing
 --- or an input is invalid.
 ---
---- This function returns an `unknown` value to allow for `return MyAddon:LogWarning(template, ...)` to immediately exit the running function with a `nil`
---- value.
----
 --- @param template string The template message, use `{propertyName}` to enable parameter replacements.
 --- @param ... any The values to log.
---- @return unknown
 function Logger:LogWarning(template, ...)
-	return LibLog:Log(self, LibLog.LogLevel.WARNING, template, ...)
+	LibLog:Log(self, LibLog.LogLevel.WARNING, template, ...)
 end
 
 --- Log an ERR message. Error logs should indicate a high severity logic failure. For example, an API returns unexpected data. An error likely
 --- indicates a bug that should be fixed, though execution can continue.
 ---
---- This function returns an `unknown` value to allow for `return MyAddon:LogError(template, ...)` to immediately exit the running function with a `nil` value.
----
 --- @param template string The template message, use `{propertyName}` to enable parameter replacements.
 --- @param ... any The values to log.
---- @return unknown
 function Logger:LogError(template, ...)
-	return LibLog:Log(self, LibLog.LogLevel.ERROR, template, ...)
+	LibLog:Log(self, LibLog.LogLevel.ERROR, template, ...)
 end
 
 --- Log a FTL message, and submit the error to the error handler. Fatal logs are the highest severity, and should be used sparringly, when
 --- execution **cannot** continue and must be halted because continuing may lead to data corruption or unrecoverable states. For example, misssing libraries
 --- or broken saved variables.
 ---
---- This function returns an `unknown` value to allow for `return MyAddon:LogFatal(template, ...)` to immediately exit the running function. Though this
---- function will trigger a Lua error pop-up when enabled by the user.
----
 --- @param template string The template message, use `{propertyName}` to enable parameter replacements.
 --- @param ... any The values to log.
---- @return unknown
 function Logger:LogFatal(template, ...)
-	return LibLog:Log(self, LibLog.LogLevel.FATAL, template, ...)
+	LibLog:Log(self, LibLog.LogLevel.FATAL, template, ...)
 end
 
 --- Push a new property onto the stack, the value of this property will be present within the context of all further logs coming from this logger, until it is
@@ -932,14 +907,13 @@ end
 --- @param level LibLog.LogLevel The log level to log with.
 --- @param template string The message template.
 --- @param ... any The values to log.
---- @return unknown
 function LibLog:Log(logger, level, template, ...)
 	local name, module = GetLoggerName(logger)
 	local isAllowed = IsLogLevelEnabled(name, level)
 	local isFatal = level == self.LogLevel.FATAL
 
 	if not isAllowed and not isFatal then
-		return nil
+		return
 	end
 
 	local templateObj = GetMessageTemplate(template)
@@ -977,8 +951,6 @@ function LibLog:Log(logger, level, template, ...)
 	if isFatal then
 		error(message, 3)
 	end
-
-	return nil
 end
 
 --- @private
