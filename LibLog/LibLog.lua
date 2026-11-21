@@ -585,6 +585,7 @@ end
 ---
 --- @param template string The template message, use `{propertyName}` to enable parameter replacements.
 --- @param ... any The values to log.
+--- @noreturn
 function Logger:LogFatal(template, ...)
 	LibLog:Log(self, LibLog.LogLevel.FATAL, template, ...)
 end
